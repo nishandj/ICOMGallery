@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1" />
+
+    <title>Image Zoom - ICOM</title>
+    <link rel="stylesheet" href="css/gallery.css" />
+    <link rel="stylesheet" href="css/easyzoom.css" />
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="dist/easyzoom.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <section id="example">            
+                <div class="large-image box easyzoom easyzoom--overlay easyzoom--with-thumbnails" >
+                    
+                        <a href="example-images/3_zoom_1.jpg">
+                            <img id="scream" src="example-images/3_standard_1.jpg" alt="" />
+                        </a>                    
+                </div>
+            
+            <p id="position"></p>
+            <ul class="thumbnails">
+                <li>
+                    <a id="t1" href="example-images/3_zoom_1.jpg" data-standard="example-images/3_standard_1.jpg" class="thumbnail small-image" onclick="javascript: setClass(this);">
+                        <img src="example-images/3_thumbnail_1.jpg" alt="" />
+                    </a>
+                </li>
+                <li>
+                    <a id="t2" href="example-images/3_zoom_2.jpg" data-standard="example-images/3_standard_2.jpg" class="thumbnail" onclick="javascript: setClass(this);">
+                        <img src="example-images/3_thumbnail_2.jpg" alt="" />
+                    </a>
+                </li>
+                <li>
+                    <a id="t3" href="example-images/3_zoom_3.jpg" data-standard="example-images/3_standard_3.jpg" class="thumbnail" onclick="javascript: setClass(this);">
+                        <img src="example-images/3_thumbnail_3.jpg" alt="" />
+                    </a>
+                </li>
+                <li>
+                    <a id="t4" href="example-images/3_zoom_4.jpg" data-standard="example-images/3_standard_4.jpg" class="thumbnail" onclick="javascript: setClass(this);">
+                        <img src="example-images/3_thumbnail_4.jpg" alt="" />
+                    </a>
+                </li>
+            </ul>
+            <div id="cursor-overlay" class="cursor-overlay"></div>
+        </section>
+    </div>
+
+	
+	<script>
+        $('#cursor-overlay').hide();
+
+        var largeImage = document.querySelector('.large-image');
+        var smallImage = document.querySelector('.small-image');
+        var cursorOverlay = document.querySelector('.cursor-overlay');
+
+        largeImage.addEventListener('mousemove', (e) => {
+            console.log('mousemove');
+            move(e);
+        });
+        largeImage.onmouseout = function (event) {
+            cursorOverlay.style.opacity = 0;
+        };
+
+		var $easyzoom = $('.easyzoom').easyZoom();
+		var api1 = $easyzoom.filter('.easyzoom--with-thumbnails').data('easyZoom');
+		$('.thumbnails').on('click', 'a', function(e) {
+			var $this = $(this);
+			e.preventDefault();			
+			api1.swap($this.data('standard'), $this.attr('href'));
+		});
+
+		var api2 = $easyzoom.filter('.easyzoom--with-toggle').data('easyZoom');
+		$('.toggle').on('click', function() {
+			var $this = $(this);
+			if ($this.data("active") === true) {
+				$this.text("Switch on").data("active", false);
+				api2.teardown();
+			} else {
+				$this.text("Switch off").data("active", true);
+				api2._init();
+			}
+		});
+
+        function move(e) {
+            $('#cursor-overlay').show();
+            smallImage = document.querySelector('.small-image');
+            const rect = largeImage.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const smallRect = smallImage.getBoundingClientRect();
+            const smallX = (x / rect.width) * smallRect.width - (cursorOverlay.offsetWidth / 2);
+            const smallY = (y / rect.height) * smallRect.height - (cursorOverlay.offsetHeight / 2);
+            const minX = 0;
+            const minY = 0;
+            const maxX = smallRect.width - cursorOverlay.offsetWidth;
+            const maxY = smallRect.height - cursorOverlay.offsetHeight;
+            const clampedX = Math.max(minX, Math.min(smallX, maxX));
+            const clampedY = Math.max(minY, Math.min(smallY, maxY));
+            
+            cursorOverlay.style.opacity = 1;
+            cursorOverlay.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+
+            cursorOverlay.style.left = `${smallRect.left}px`;
+            cursorOverlay.style.top = `${smallRect.top}px`;
+        }
+
+        function hide() {
+            cursorOverlay.style.opacity = 0;            
+        }
+
+        function show() {
+            cursorOverlay.style.opacity = 1;
+        }
+
+        function setClass(element) {
+            $('.thumbnail').removeClass('small-image');
+            $(element).addClass('small-image');
+        }
+
+        function ThzhotspotPosition(evt, el, hotspotsize, percent) {
+            var left = el.offset().left;
+            var top = el.offset().top;
+            var hotspot = hotspotsize ? hotspotsize : 0;
+            if (percent) {
+                x = (evt.pageX - left - (hotspot / 2)) / el.outerWidth() * 100 + '%';
+                y = (evt.pageY - top - (hotspot / 2)) / el.outerHeight() * 100 + '%';
+            } else {
+                x = (evt.pageX - left - (hotspot / 2));
+                y = (evt.pageY - top - (hotspot / 2));
+            }
+
+            return {
+                x: x,
+                y: y
+            };
+        }
+
+        $(function () {
+
+            $('.box').mousemove(function (e) {
+
+                var hp = ThzhotspotPosition(e, $(this), 20, true); // true = percent | false or no attr = px
+
+                var hotspot = $('<div class="hotspot">').css({
+                    left: hp.x,
+                    top: hp.y,
+                });
+                $(this).append(hotspot);
+                //$("#position").text("X: " + hp.x + ", Y: " + hp.y);
+
+            });
+
+
+        });
+        
+	</script>
+
+</body>
+</html>
